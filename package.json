@@ -1,0 +1,20 @@
+{
+  "name": "scroll-blocks",
+  "version": "1.0.0",
+  "description": "",
+  "main": "ScrollBlock.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jamie Owen <hello@jamieowen.com> (=)",
+  "license": "ISC",
+  "devDependencies": {
+    "tape": "^4.0.1"
+  },
+  "dependencies": {
+    "signals": "^1.0.0"
+  }
+}
