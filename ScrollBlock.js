@@ -5,7 +5,7 @@ var ScrollBlock = function( name, size ){
 
 	this.onEnter  = new Signal();
 	this.onLeave  = new Signal();
-	this.onScroll = new Signal();
+	this.onScroll = new Signal(); // handler( globalPosition, innerPosition, localPosition ) ??
 
 	this.blocks = [];
 
@@ -27,9 +27,15 @@ ScrollBlock.prototype = {
 
 	add : function( name, size ){
 
-		var block = new ScrollBlock( name, size );
+		var block = name instanceof ScrollBlock ? name : null;
+
+		if( !block ){
+			block = new ScrollBlock( name, size );
+		}
+
 		this.blocks.push( block );
 		block.parent = this;
+
 		return block;
 	},
 
@@ -39,25 +45,28 @@ ScrollBlock.prototype = {
 
 			block._start = start;
 			block._end = start + block.size;
+			var pos = block._end;
 
-			start = block._end;
+			console.log( 'calc :', block.name, block._start, block._end );
+
 			for( var i = 0; i<block.blocks.length; i++ ){
-				calcOffsets( block.blocks[i], start );
-				start += block.blocks[i].size;
+				pos = calcOffsets( block.blocks[i], pos );
 			}
+
+			return pos;
 		};
 
 		return function(){
+
 			var root = this;
 			while( root.parent ){
-				root._invalid = true;
 				root = root.parent;
 			}
 
 			calcOffsets( root, 0 );
 		};
 
-	},
+	}(),
 
 	/**
 	 * Traverses the block tree and calculates the length
@@ -77,63 +86,63 @@ ScrollBlock.prototype = {
 
 	},
 
-	setPosition : function(){
+	/**
+	 * Set the scroll position of the tree.
+	 *
+	 * @param position
+	 */
+	setPosition : function( position ) {
 
-		var intersects = function( offset, block, position ){
-
-			var start = offset;
-			var end = offset + block.size;
-
-			if( block.size > 0 && position >= start && position <= end ){
-				// within this block.
-				// calculate relative offsets ( and up the tree? )
-				return block;
-			}else{
-				// search children.
-				var found = null;
-				var l = block.blocks.length;
-
-				for( var i = 0; i<l && found===null; i++ ){
-					found = intersects( end, block.blocks[i], position );
-					end += block.blocks[i].length();
-				}
-
-				return found;
-			}
-
-		};
-
-		return function( position ){
-			// if not root block, find root block??
-			var root = this;
-			while( root.parent ){
-				root = root.parent;
-			}
-
-			// set position.
-			var prevPosition = root._position;
-			var prevBlock    = root._block;
-
-			if( position === prevPosition ){
-				return;
-			}
-
-			var currentBlock = intersects( 0, this, position );
-
-			if( currentBlock !== prevBlock ){
-
-				prevBlock.onLeave.dispatch();
-				currentBlock.onEnter.dispatch();
-			}
-
-			return currentBlock;
-			// emit the scroll position with easing introduced?
-
+		// find the root.
+		var root = this;
+		while( root.parent ){
+			root = root.parent;
 		}
 
-	}(),
+		var prevBlock = root._currentBlock;
+		var prevPosition = root._currentPosition;
 
-	getPosition : function( local ){
+		if( prevPosition === position ){
+			return;
+		}
+
+		var currentBlock = root.contains( position );
+		var blockChanged = false;
+
+		if( prevBlock && prevBlock !== currentBlock ){
+			prevBlock.onLeave.dispatch();
+			blockChanged = true;
+		}
+
+		if( blockChanged && currentBlock ){
+			currentBlock.onEnter.dispatch();
+		}
+
+		// dispatch scroll
+		var local = position - currentBlock._start;
+		var global = position;
+		currentBlock.onScroll.dispatch( local, global );
+
+		root._currentBlock = currentBlock;
+		root._currentPosition = position;
+
+	},
+
+	getPosition : function(){
+
+	},
+
+	contains: function( position ){
+
+		if( this._start >= position && this._end <= position ){
+			return this;
+		}else{
+			var block;
+			for( var i = 0; i<this.blocks.length && !block; i++ ){
+				block = this.blocks[i].contains( position );
+			}
+			return block;
+		}
 
 	}
 
