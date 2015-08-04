@@ -43,14 +43,20 @@ ScrollBlock.prototype = {
 
 		var calcOffsets = function( block, start ){
 
-			block._start = start;
-			block._end = start + block.size;
-			var pos = block._end;
+			// traverse children first.
+			// scrolling begins with deepest child.
 
-			console.log( 'calc :', block.name, block._start, block._end );
-
+			//console.log( 'calc :', block.name, block._start, block._end );
+			var pos = start;
 			for( var i = 0; i<block.blocks.length; i++ ){
 				pos = calcOffsets( block.blocks[i], pos );
+			}
+
+			// then add parent.
+			if( block.size ){
+				block._start = pos;
+				block._end = pos + block.size;
+				pos = block._end;
 			}
 
 			return pos;
@@ -107,22 +113,29 @@ ScrollBlock.prototype = {
 		}
 
 		var currentBlock = root.contains( position );
-		var blockChanged = false;
+		var blockChanged = prevBlock ? false : true;
+
+		//console.log( 'CURRENT BLOCK :', currentBlock );
 
 		if( prevBlock && prevBlock !== currentBlock ){
 			prevBlock.onLeave.dispatch();
 			blockChanged = true;
+			console.log( 'LEAVE : ', prevBlock.name );
 		}
 
 		if( blockChanged && currentBlock ){
 			currentBlock.onEnter.dispatch();
+			console.log( 'ENTER : ', currentBlock.name );
 		}
 
+		if( currentBlock ){
+			var local = position - currentBlock._start;
+			var global = position;
+			currentBlock.onScroll.dispatch( local, global );
+		}
 		// dispatch scroll
-		var local = position - currentBlock._start;
-		var global = position;
-		currentBlock.onScroll.dispatch( local, global );
 
+		//console.log( 'SCROLL UPDATE : ', position );
 		root._currentBlock = currentBlock;
 		root._currentPosition = position;
 
@@ -134,10 +147,11 @@ ScrollBlock.prototype = {
 
 	contains: function( position ){
 
-		if( this._start >= position && this._end <= position ){
+		if( this.size > 0 && position >= this._start && position < this._end ){
 			return this;
 		}else{
 			var block;
+
 			for( var i = 0; i<this.blocks.length && !block; i++ ){
 				block = this.blocks[i].contains( position );
 			}

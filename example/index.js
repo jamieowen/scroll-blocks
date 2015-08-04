@@ -31,7 +31,7 @@ window.onload = function(){
 
 				//block = new ScrollBlock( 'subBlock_' + i + '_' + j, 300 );
 				//subBlock.add( block );
-				subBlock.add( 'subBlock_' + i + '_' + j, 300 );
+				subBlock.add( 'subBlockChild_' + i + '_' + j, 300 );
 			}
 
 			html += '</div></div>';
@@ -39,7 +39,6 @@ window.onload = function(){
 			html +=
 				'<div style="background-color: #0055aa; width: 100%; height: 100%;">' +
 				'' +
-
 				'</div>';
 
 		}
@@ -47,8 +46,15 @@ window.onload = function(){
 	}
 	html += '</div>';
 
-
 	rootBlock.calc();
+	rootBlock.setPosition( 0 );
+
+	window.onscroll = function( ev ){
+		var position = document.body.scrollTop;
+		console.log( position );
+		rootBlock.setPosition( position );
+	};
+
 	console.log( 'ROOT:', rootBlock, rootBlock.length() );
 	document.body.innerHTML = html;
 
