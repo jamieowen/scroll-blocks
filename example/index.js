@@ -13,12 +13,21 @@ window.onload = function(){
 	var rootBlock = new ScrollBlock( 'rootBlock' );
 	var subBlock,block;
 
+	var onScroll = function( name, data, dataNorm ){
+		//console.log( 'SCROLL : ', name,
+		//	data.local, data.parent, data.global,
+		//	dataNorm.local, dataNorm.parent, dataNorm.global);
+	};
+
+	rootBlock.onScroll.add( onScroll );
+
 	var html = '<div style="width:100%; height:100%; position: absolute;">';
 
 	for( var i = 0; i<5; i++ ){
 
 		subBlock = new ScrollBlock( 'subBlock_' + i, window.innerHeight );
 		rootBlock.add( subBlock );
+		subBlock.onScroll.add( onScroll );
 
 		if( i % 2 === 0 ){
 
@@ -29,9 +38,8 @@ window.onload = function(){
 				var color = j % 2 === 0 ? '#fff' : '#fee';
 				html += '<div style="width: 400px; height: 300px; background-color: ' + color + '"></div>';
 
-				//block = new ScrollBlock( 'subBlock_' + i + '_' + j, 300 );
-				//subBlock.add( block );
-				subBlock.add( 'subBlockChild_' + i + '_' + j, 300 );
+				block = subBlock.add( 'subBlockChild_' + i + '_' + j, 300 );
+				block.onScroll.add( onScroll );
 			}
 
 			html += '</div></div>';
@@ -51,14 +59,13 @@ window.onload = function(){
 
 	window.onscroll = function( ev ){
 		var position = document.body.scrollTop;
-		console.log( position );
 		rootBlock.setPosition( position );
 	};
 
-	console.log( 'ROOT:', rootBlock, rootBlock.length() );
+	console.log( 'ROOT:', rootBlock, rootBlock.size() );
 	document.body.innerHTML = html;
 
-	document.body.style.height = rootBlock.length() + 'px';
+	document.body.style.height = rootBlock.size() + 'px';
 
 	/**
 
