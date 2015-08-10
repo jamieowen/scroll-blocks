@@ -16,6 +16,22 @@ test( 'basic demo', function( t ){
 
 	var childDep1_3 = rootBlock.add( 'childDep1_3', 300 );
 
+	//  ---
+	// |   |
+	// |   | child 1 - dep 1
+	//  ---
+	// |   | child 2 - sub 1 - dep2
+	//  ---
+	// |   | child 2 - sub 2 - dep2
+	//  ---
+	// |   |
+	// |   | child 2 - dep 2 - ( above 2 blocks are children of this but come first )
+	//  ---
+	// |   |
+	// |   | child 3 - dep 1
+	//  ---
+
+
 	var lastEntered = null;
 	var lastLeaved = null;
 	var lastScrolled = null;
@@ -35,7 +51,7 @@ test( 'basic demo', function( t ){
 	};
 
 	var onScroll = function( block, relativePosition, globalPosition ){
-		lastScrolled.push( relativePosition );
+		lastScrolled.push( [ block.name, relativePosition ] );
 	};
 
 	// add listeners

@@ -104,7 +104,7 @@ ScrollBlock.prototype = {
 		return size;
 
 	},
-	
+
 	sizeChildren: function(){
 
 		var size = 0;
@@ -144,12 +144,18 @@ ScrollBlock.prototype = {
 				}else
 				if( position >= pass.pos && position < (pass.pos + b._size) ){
 					// this is the containing block of the scroll position
-					// calculate the offsets...
+					// calculate the local offset.
 					pass.found = b;
 					// position relative to block
 					b.position = ( position - pass.pos ) / b._size;
 
+					// NEED TO DISPATCH 3 POSITIONS.
+					// 1. The relative position to the current block.
+					// 2. The relative position to the parent block at the length of its immediate children
+					// 3. The relative position to the parent block at the length of every child recursively.
+
 					// position relative to parent.
+					// calculate down to the root...
 					var flatSize = b.parent.size(false);
 					var preSize = b.parent.size(false, b.parent.blocks.indexOf(b) );
 					var pPos = preSize / flatSize;
