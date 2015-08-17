@@ -7,8 +7,8 @@ window.onload = function() {
 	var tree = new ScrollTree( 'treeRoot' );
 	var winBlock,evenBlock,oddBlock;
 	var id = 0;
-	var childWidth = 400;
-	var childHeight = 300;
+	var childWidth = 600;
+	var childHeight = 400;
 
 	var parentBlocks = []; // listen and scroll these.
 	parentBlocks.push( tree );
@@ -75,9 +75,6 @@ window.onload = function() {
 				node.onParentScroll.add( function( scroll ){
 
 					var scroll = (scroll * node._csize );
-					//console.log( scroll );
-					//ele.style.transform = 'translate( 0,' + scroll + 'px )';
-					//ele.style.top = scroll + 'px';
 					ele.scrollTop = scroll;
 				});
 
