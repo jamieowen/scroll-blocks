@@ -9,6 +9,8 @@ var calcOffsetsAndSize = function( node, position ){
 
 	node._csize = 0;
 	node._tsize = 0;
+	node._tstart = 0;
+	node._tend = 0;
 
 	for( var i = 0; i<node.children.length; i++ ){
 		cnode = node.children[i];
@@ -28,25 +30,28 @@ var calcOffsetsAndSize = function( node, position ){
 	return position;
 };
 
+
+var sizeRecursive = function( node ){
+
+	// important not to include the supplied node size.
+	// weird - but the root does not have a size.
+	var size = 0;
+	var cnode;
+	for( var i = 0; i<node.children.length; i++ ){
+		cnode = node.children[i];
+		size += cnode.size;
+		size += sizeRecursive( cnode );
+	}
+	return size;
+};
+
 var calcBranchSizes = function( node ){
 
-	// start from leaf nodes and work backwards
-	if( node.children.length === 0 ){
+	node._tsize = sizeRecursive( node );
 
-		var p = node.parent;
-
-		while( p ){
-			p._tsize += p._csize;
-			p = p.parent;
-		}
-
-	}else{
-
-		for( var i = 0; i<node.children.length; i++ ){
-			calcBranchSizes( node.children[i] );
-		}
+	for( var i = 0; i<node.children.length; i++ ){
+		calcBranchSizes( node.children[i] );
 	}
-
 };
 
 

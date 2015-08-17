@@ -102,12 +102,12 @@ test( 'basic single block', function( t ){
 
 	//t.plan( 6 );
 
-	tree.onScroll.add( function( pos, posNorm ){
+	tree.onNodeScroll.add( function( pos, posNorm ){
 		t.equals( pos, 0 );
 		t.equals( posNorm, 0 );
 	});
 
-	tree.onChildScroll.add( function( pos, posNorm ){
+	tree.onParentScroll.add( function( pos, posNorm ){
 		t.equals( pos, 250 );
 		t.equals( posNorm, 0.5 );
 	});
@@ -121,6 +121,42 @@ test( 'basic single block', function( t ){
 
 	tree.traverse( function( node ){
 		console.log( 'node :', node.name, node.size, node._gstart, node._gend, node._csize, node._tsize );
+	});
+
+	t.end();
+
+});
+
+test( 'nested', function( t ){
+
+	var tree = new ScrollTree( 'root' );
+	var child1 = tree.add( 'child1', 500 );
+	var child2 = child1.add( 'child2', 250 );
+	var child3 = child2.add( 'child3', 250 );
+	var child4 = tree.add( 'child4', 500 );
+
+	//t.plan( 6 );
+
+	/**
+	tree.onNodeScroll.add( function( pos, posNorm ){
+		t.equals( pos, 0 );
+		t.equals( posNorm, 0 );
+	});
+
+	tree.onParentScroll.add( function( pos, posNorm ){
+		t.equals( pos, 250 );
+		t.equals( posNorm, 0.5 );
+	});
+
+	tree.onTreeScroll.add( function( pos, posNorm ){
+		t.equals( pos, 250 );
+		t.equals( posNorm, 0.5 );
+	});**/
+
+	tree.setPosition( 100 );
+
+	tree.traverse( function( node ){
+		console.log( 'node :', node.name, node.size, '| tree-size:', node._tsize, ' | position: ', node.nodePosition, '|  tree / parent :',  node.treePosition, node.parentPosition );
 	});
 
 	t.end();

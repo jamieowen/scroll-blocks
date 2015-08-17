@@ -9,20 +9,21 @@ var Instances = {
 	needsUpdate: {}
 };
 
-var ScrollTree = function(){
+var ScrollTree = function( name ){
 
+	name = name || 'root';
 	Instances.id++;
 
 	this._id = Instances.id;
 	Instances.needsUpdate[ this._id ] = true;
 
-	this.root = new Node('root',NaN);
+	this.root = new Node(name,NaN);
 	this.root._owner = this._id;
 
 	this.onEnter  = new Signal();
 	this.onLeave  = new Signal();
-	this.onScroll = this.root.onScroll;
-	this.onChildScroll = this.root.onChildScroll;
+	this.onNodeScroll = this.root.onNodeScroll;
+	this.onParentScroll = this.root.onParentScroll;
 	this.onTreeScroll = this.root.onTreeScroll;
 };
 
@@ -53,15 +54,20 @@ ScrollTree.prototype = {
 			Instances.needsUpdate[this._id] = false;
 		}
 
-		var pass = {
-			pos: 0,
-			found: null
-		};
-
-		//positionTree( this.root, position );
+		positionTree( this.root, position );
 
 	}
 };
+
+Object.defineProperties( ScrollTree.prototype, {
+
+	size: {
+		get: function(){
+			return this.root._tsize;
+		}
+	}
+
+});
 
 
 var Node = function( name, size ){
@@ -69,8 +75,8 @@ var Node = function( name, size ){
 	this.onEnter  = new Signal();
 	this.onLeave  = new Signal();
 	
-	this.onScroll = new Signal();
-	this.onChildScroll = new Signal();
+	this.onNodeScroll = new Signal();
+	this.onParentScroll = new Signal();
 	this.onTreeScroll = new Signal();
 
 	this.children = [];
@@ -79,16 +85,18 @@ var Node = function( name, size ){
 	this.size  = size === undefined ? 0 : size;
 
 	this.parent = null;
-	this.entered = false;
+	this._entered = null;
 
-	this._owner = NaN; // tree owner
+	this._owner = NaN; // node owner <ScrollTree>
 
-	this._cpos = NaN; // child pos
-	this._tpos = NaN; // tree pos
-	this._spos = NaN; // scroll pos
+	this._parentPosition = NaN;
+	this._treePosition = NaN;
+	this._nodePosition = NaN;
 
 	this._gstart = NaN; // global start pos
 	this._gend 	 = NaN; // global end pos
+	this._tstart = NaN; // tree start
+	this._tend   = NaN; // tree end
 
 	this._csize = NaN; // children size;
 	this._tsize = NaN; // tree size.
@@ -156,6 +164,72 @@ Node.prototype = {
 	}()
 
 };
+
+
+Object.defineProperties( Node.prototype, {
+
+	nodePosition: {
+		get: function(){
+			return this._nodePosition;
+		},
+
+		set: function( value ){
+			if( this._nodePosition === value ){
+				return;
+			}
+			this._nodePosition = value;
+			this.onNodeScroll.dispatch( this._nodePosition );
+		}
+	},
+
+	treePosition: {
+		get: function(){
+			return this._treePosition;
+		},
+
+		set: function( value ){
+			if( this._treePosition === value ){
+				return;
+			}
+			this._treePosition = value;
+			this.onTreeScroll.dispatch( this._treePosition );
+		}
+	},
+
+	parentPosition: {
+		get: function(){
+			return this._parentPosition;
+		},
+
+		set: function( value ){
+			if( this._parentPosition === value ){
+				return;
+			}
+			this._parentPosition = value;
+			this.onParentScroll.dispatch( this._parentPosition );
+		}
+	},
+
+	entered: {
+
+		get: function(){
+			return this._entered;
+		},
+
+		set: function( value ){
+			if( this._entered === value ){
+				return;
+			}
+			this._entered = value;
+
+			if( this.entered ){
+				this.onEnter.dispatch();
+			}else{
+				this.onLeave.dispatch();
+			}
+		}
+	}
+});
 
 
 
